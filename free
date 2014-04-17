@@ -1,0 +1,62 @@
+#!/bin/bash
+# free from clutils-osx 0.0.1
+
+divisor=1024
+mode=$1
+
+for opt in "$@"
+do
+    if [[ $opt == "--version" ]]
+    then
+        echo free from clutils-osx 0.0.1
+        exit 0
+    elif [[ $opt == "--help" ]]
+    then
+        cat <<EOT
+Usage:
+ free [options]
+
+Options:
+ -b             show output in bytes
+ -k             show output in kibibytes
+ -m             show output in mebibytes
+ -g             show output in gibibytes
+     --si       show SI kilobytes, megabytes, gigabytes
+     --help     display this help and exit
+     --version  output version information and exit
+EOT
+        exit 0
+    elif [[ $opt == "--si" ]]
+    then
+        divisor=1000
+    else
+        mode=$opt
+    fi
+done
+
+total=$(sysctl -n hw.memsize)
+used=0
+for x in $(vm_stat | awk '/Pages wired down/ { print $4 } /Pages (in)?active/ { print $3 }')
+do
+    used=$((used + 4096 * ${x%.}))
+done
+
+out() {
+    case $mode in
+        -g)
+            echo -n $(($1 / divisor / divisor / divisor))
+            ;;
+        -m)
+            echo -n $(($1 / divisor / divisor))
+            ;;
+        -k)
+            echo -n $(($1 / divisor))
+            ;;
+        *)
+            echo -n $1
+            ;;
+    esac
+}
+
+printf "        %10s %10s %10s\n" total used free
+printf "Mem:    %10i %10i %10i\n" $(out $total) $(out $used) $(out $((total - used)))
