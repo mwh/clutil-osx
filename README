@@ -1,0 +1,11 @@
+clutil-osx is a suite providing Linux-style utility programs for OS X.
+
+The suite currently includes one program:
+ * free
+   Duplicates much of the behaviour of the procps version of `free`,
+   including the format of the first two lines, and the -k, -m, -g, and
+   --si options.
+
+The behaviour of these programs is similar to that on common Linux
+distributions for those with trained fingers, but works on top of OS X
+tooling and primitives.
