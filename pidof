@@ -1,0 +1,51 @@
+#!/bin/bash
+# pidof from clutils-osx 0.0.1
+
+PROG=$1
+
+for opt in "$@"
+do
+    if [[ $opt == "--version" ]]
+    then
+        echo pidof from clutils-osx 0.0.1
+        exit 0
+    elif [[ $opt == "--help" ]]
+    then
+        cat <<EOT
+Usage:
+ pidof [options] program
+
+Options:
+ -s             single-shot - only show one PID
+     --help     display this help and exit
+     --version  output version information and exit
+EOT
+        exit 0
+    elif [[ $opt == "-s" ]]
+    then
+        ONE_ONLY=y
+    elif [[ $opt == "-x" ]]
+    then
+        # This is currently too liberal - it needs to check the
+        # actual command run. It's here, but it's not advertised.
+        INCLUDE_SCRIPTS=y
+        AND=and
+    else
+        PROG=$opt
+    fi
+done
+
+[ "$PROG" ] || exit 1
+[ "$INCLUDE_SCRIPTS" ] && INCLUDE_SCRIPTS='|| match($3, "'"$PROG"'")'
+
+FOUND=
+while read pid
+do
+    echo $pid
+    if [[ $ONE_ONLY ]]
+    then
+        exit 0
+    fi
+    FOUND=y
+done < <(ps -o pid= -o comm$AND= | awk '{ if (match($2, "'"$PROG"'")'"$INCLUDE_SCRIPTS"') { print $1 } }')
+[ "$FOUND" ] || exit 1
